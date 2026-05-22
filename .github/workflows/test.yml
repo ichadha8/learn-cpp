@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ gcc python3 python3-pytest
+      - name: Configure scaffold
+        run: cmake --preset dev
+      - name: Build scaffold
+        run: cmake --build --preset dev
+
+  assignment-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [hw01, hw02, hw03, hw04, hw05, capstone-c, capstone-cpp]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ gcc python3 python3-pytest
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+      - name: Run tests
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure

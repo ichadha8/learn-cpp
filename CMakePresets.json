@@ -1,0 +1,98 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "Development scaffold",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TRAINING_ASSIGNMENT": "all",
+        "TRAINING_ENABLE_STUDENT_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "hw01",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/hw01",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "hw01",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "hw02",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/hw02",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "hw02",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "hw03",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/hw03",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "hw03",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "hw04",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/hw04",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "hw04",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "hw05",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/hw05",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "hw05",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "capstone-c",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/capstone-c",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "capstone-c",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
+      "name": "capstone-cpp",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/capstone-cpp",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "capstone-cpp",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "dev", "configurePreset": "dev" },
+    { "name": "hw01", "configurePreset": "hw01" },
+    { "name": "hw02", "configurePreset": "hw02" },
+    { "name": "hw03", "configurePreset": "hw03" },
+    { "name": "hw04", "configurePreset": "hw04" },
+    { "name": "hw05", "configurePreset": "hw05" },
+    { "name": "capstone-c", "configurePreset": "capstone-c" },
+    { "name": "capstone-cpp", "configurePreset": "capstone-cpp" }
+  ],
+  "testPresets": [
+    { "name": "hw01", "configurePreset": "hw01", "output": { "outputOnFailure": true } },
+    { "name": "hw02", "configurePreset": "hw02", "output": { "outputOnFailure": true } },
+    { "name": "hw03", "configurePreset": "hw03", "output": { "outputOnFailure": true } },
+    { "name": "hw04", "configurePreset": "hw04", "output": { "outputOnFailure": true } },
+    { "name": "hw05", "configurePreset": "hw05", "output": { "outputOnFailure": true } },
+    { "name": "capstone-c", "configurePreset": "capstone-c", "output": { "outputOnFailure": true } },
+    { "name": "capstone-cpp", "configurePreset": "capstone-cpp", "output": { "outputOnFailure": true } }
+  ]
+}

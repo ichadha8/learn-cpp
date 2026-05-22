@@ -1,0 +1,14 @@
+build/
+.cache/
+
+__pycache__/
+*.py[cod]
+
+*.o
+*.obj
+*.exe
+*.out
+
+out/
+data/
+*.log
