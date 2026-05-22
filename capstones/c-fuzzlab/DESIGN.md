@@ -14,6 +14,28 @@ Do not start with coverage. Start with a single target execution:
 
 Once that works, the fuzzer loop is just repetition with better inputs.
 
+## Four-File Source Split
+
+The capstone source is split into four files:
+
+```text
+src/main.c
+src/mutate.c
+src/runner.c
+src/campaign.c
+```
+
+Use this split to keep the project debuggable:
+
+- `main.c`: CLI parsing, config validation, and top-level exit status.
+- `mutate.c`: hashing, byte input helpers, and mutation strategies.
+- `runner.c`: target argv replacement, fork/exec, redirection, timeout, status classification.
+- `campaign.c`: corpus loading, artifact saving, summary writing, and `fuzzlab_run`.
+
+Avoid moving campaign logic into `main.c`. `main.c` should translate command
+line arguments into `fuzzlab_config_t`, call `fuzzlab_run`, and return an exit
+status.
+
 ## Target Arguments
 
 The target command uses `@@` as the input placeholder:
@@ -57,6 +79,9 @@ Include metadata in a sidecar file if useful:
 }
 ```
 
+Save timeouts too. A fuzzer that only saves signal crashes hides an important
+class of bugs: hangs.
+
 ## Coverage Guidance
 
 For the first finished version, fake "interestingness" with:
@@ -77,4 +102,7 @@ instrumentation and shared memory.
 - Child calls `_exit` after failed `execvp`.
 - Timeout cannot kill the parent.
 - Output paths are validated.
+- Oversized seeds are rejected.
+- Corpus capacity is enforced.
+- Summary counters add up.
 - Python scripts can run from repo root.

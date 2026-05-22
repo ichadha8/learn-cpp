@@ -128,6 +128,20 @@ ctest --preset bonus-cpp-warmup --output-on-failure
 The assignment tests are expected to fail at first. That is normal. The tests
 describe the behavior you need to implement.
 
+## Testing Policy
+
+The main homework assignments, `hw01` through `hw05`, include broad public test
+suites so learners can spend most of their time learning the systems concepts
+instead of inventing every test from scratch.
+
+The `bonus-cpp-warmup` assignment intentionally keeps a smaller test suite. Use
+that one to practice adding a few tests yourself before moving into the harder
+C++ RAII work.
+
+The capstones include starter tests, but they still require additional tests as
+part of the project. A capstone is large enough that no small provided test file
+can prove the whole thing works.
+
 ## Preset List
 
 Use these preset names:

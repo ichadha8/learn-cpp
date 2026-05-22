@@ -1,7 +1,9 @@
 find_package(Threads REQUIRED)
 
 add_library(pulsekv_core
-  src/pulsekv.cpp
+  src/store.cpp
+  src/protocol.cpp
+  src/server.cpp
 )
 target_include_directories(pulsekv_core PUBLIC include)
 target_link_libraries(pulsekv_core PUBLIC Threads::Threads)

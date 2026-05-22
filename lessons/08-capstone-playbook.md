@@ -71,6 +71,7 @@ Starter code should provide:
 
 - public headers;
 - structs and enums;
+- a four-file source split (`main.c`, `mutate.c`, `runner.c`, `campaign.c`);
 - empty function bodies;
 - demo target;
 - Python script skeletons.
@@ -125,6 +126,7 @@ Starter code should provide:
 
 - class declarations;
 - method signatures;
+- a four-file source split (`main.cpp`, `store.cpp`, `protocol.cpp`, `server.cpp`);
 - command/response enums;
 - tests that describe behavior;
 - Python client/load-test skeletons.

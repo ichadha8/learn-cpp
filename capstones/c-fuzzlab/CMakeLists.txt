@@ -1,5 +1,7 @@
 add_library(fuzzlab_core
-  src/fuzzlab.c
+  src/mutate.c
+  src/runner.c
+  src/campaign.c
 )
 target_include_directories(fuzzlab_core PUBLIC include)
 training_set_c_warnings(fuzzlab_core)

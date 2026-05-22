@@ -5,6 +5,27 @@
 Do not start with sockets. Start with the store and parser. Networking makes
 bugs harder to reproduce, so keep the core logic testable without a server.
 
+## Four-File Source Split
+
+The capstone source is split into four files:
+
+```text
+src/main.cpp
+src/store.cpp
+src/protocol.cpp
+src/server.cpp
+```
+
+Use this split to keep the project interview-readable:
+
+- `main.cpp`: CLI parsing and top-level mode selection.
+- `store.cpp`: map ownership, locking, and counters.
+- `protocol.cpp`: text parsing and exact response formatting.
+- `server.cpp`: RAII descriptors, append log, thread pool, TCP server.
+
+Keep public declarations in `include/pulsekv.hpp`. Add private helpers inside
+the relevant `.cpp` file instead of creating one giant implementation file.
+
 ## Store
 
 Use:

@@ -166,6 +166,8 @@ Provided:
 
 - capstone architecture spec;
 - public fuzzer types;
+- corpus, artifact, and summary type declarations;
+- four-source-file split (`main.c`, `mutate.c`, `runner.c`, `campaign.c`);
 - hash/input helper examples;
 - demo crashy target;
 - Python triage/report script skeletons.
@@ -178,6 +180,7 @@ Left to implement:
 - corpus loading;
 - mutation suite;
 - crash artifact saving;
+- timeout artifact saving;
 - campaign summary.
 
 Rationale:
@@ -190,6 +193,8 @@ small functions.
 Provided:
 
 - command/store types;
+- RAII, append-log, thread-pool, and server signatures;
+- four-source-file split (`main.cpp`, `store.cpp`, `protocol.cpp`, `server.cpp`);
 - method signatures;
 - REPL placeholder;
 - Python client/load-test skeletons.
@@ -200,6 +205,7 @@ Left to implement:
 - parser;
 - command execution;
 - RAII sockets;
+- append-log replay;
 - thread pool;
 - persistence;
 - metrics;
