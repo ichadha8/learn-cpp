@@ -11,12 +11,15 @@ adds two larger projects: one in C and one in C++.
 ## Course Shape
 
 - `lessons/` contains notes and implementation guidance.
-- `assignments/` contains five scaffolded homeworks with starter code and tests.
+- `assignments/` contains five scaffolded homeworks, one C++ warmup bonus, starter code, and tests.
 - `capstones/` contains two portfolio projects with C/C++ cores and Python tooling.
+- `STARTER_SCOPE.md` explains what code is provided and what is intentionally left blank.
 - `.devcontainer/` configures GitHub Codespaces.
 - `.github/workflows/` contains a starter CI workflow.
 
 ## Fast Start
+
+For a full setup walkthrough, read `INSTRUCTIONS.md`.
 
 Open the repository in GitHub Codespaces, then run:
 
@@ -33,7 +36,8 @@ cmake --build --preset hw01
 ctest --preset hw01 --output-on-failure
 ```
 
-Repeat with `hw02`, `hw03`, `hw04`, `hw05`, `capstone-c`, or `capstone-cpp`.
+Repeat with `hw02`, `hw03`, `bonus-cpp-warmup`, `hw04`, `hw05`,
+`capstone-c`, or `capstone-cpp`.
 
 The scaffold build is expected to pass before any homework is solved. Individual
 homework tests are intentionally written against the TODOs, so they may fail
@@ -51,7 +55,9 @@ Week 3: Unix files, processes, redirection, signals, and timeouts.
 
 Week 4: profiling, caches, mutation, fuzzing, and sanitizer workflows.
 
-Week 5: modern C++, RAII, STL, move semantics, and CMake.
+Week 5 bridge: basic C++ syntax, strings, vectors, classes, and tests.
+
+Week 5 core: modern C++, RAII, STL, move semantics, and CMake.
 
 Week 6: threads, sockets, synchronization, and service design.
 

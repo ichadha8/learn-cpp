@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        preset: [hw01, hw02, hw03, hw04, hw05, capstone-c, capstone-cpp]
+        preset: [hw01, hw02, hw03, bonus-cpp-warmup, hw04, hw05, capstone-c, capstone-cpp]
     steps:
       - uses: actions/checkout@v4
       - name: Install packages

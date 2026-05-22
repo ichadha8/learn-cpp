@@ -53,6 +53,24 @@ Optional advanced features:
 - sanitizer target examples;
 - corpus pruning.
 
+## Starter Boundary
+
+The starter code gives you the public types, function signatures, a demo target,
+and Python tooling skeletons. It does not implement the actual campaign engine.
+
+You are expected to implement:
+
+- argument parsing;
+- replacing `@@` in target arguments;
+- writing mutated inputs to temporary files;
+- launching and timing target programs;
+- classifying target status;
+- saving crash files;
+- producing a run summary.
+
+This is intentional. The capstone is resume-worthy only if you build the hard
+systems pieces yourself.
+
 ## Milestones
 
 ### Milestone 1: Runner
@@ -149,6 +167,68 @@ python/
   report.py
   make_seeds.py
 ```
+
+## Public Function Contracts
+
+### `unsigned int fuzzlab_hash_bytes(const unsigned char *bytes, size_t length)`
+
+Computes a stable hash for input bytes. This is used for naming artifacts and
+grouping crashes. A starter implementation may exist, but you should understand
+that the hash must be deterministic across runs.
+
+### `int fuzzlab_input_from_string(fuzzlab_input_t *out, const char *text)`
+
+Creates an input object from a C string. This is mostly for tests and seed
+helpers. The fuzzer itself should treat inputs as byte buffers, not strings.
+
+### `int fuzzlab_mutate(const fuzzlab_input_t *input, fuzzlab_input_t *out, unsigned int seed)`
+
+Produces one mutated input without modifying `input`.
+
+Required first version:
+
+- handle empty input;
+- copy input to output;
+- apply one deterministic byte/bit mutation based on seed.
+
+Expanded version:
+
+- cycle through multiple mutation strategies;
+- truncate safely at `FUZZLAB_MAX_INPUT`;
+- preserve deterministic behavior for tests.
+
+### `fuzzlab_result_t fuzzlab_run_target(char *const argv[], const char *input_path, int timeout_ms)`
+
+Runs the target once.
+
+Required behavior:
+
+1. Create a child process.
+2. Replace `@@` argument with `input_path`.
+3. Redirect stdout/stderr.
+4. Execute target with `execvp`.
+5. Enforce timeout.
+6. Classify status.
+7. Reap the child.
+
+This is the heart of the capstone.
+
+### `int fuzzlab_run(const fuzzlab_config_t *config)`
+
+Runs a full fuzzing campaign:
+
+```text
+load seeds
+for each iteration:
+    choose input
+    mutate
+    run target
+    save crash or interesting input
+write summary
+cleanup
+```
+
+This function should own the campaign-level resources and cleanup paths.
 
 ## Suggested Demo Target
 

@@ -18,55 +18,20 @@ void fl_queue_init(fl_queue_t *queue) {
 }
 
 void fl_queue_destroy(fl_queue_t *queue) {
-    if (queue == NULL) {
-        return;
-    }
-
-    fl_node_t *node = queue->head;
-    while (node != NULL) {
-        fl_node_t *next = node->next;
-        free(node);
-        node = next;
-    }
-    fl_queue_init(queue);
+    (void)queue;
+    /* TODO */
 }
 
 int fl_queue_push(fl_queue_t *queue, const fl_input_t *input) {
-    if (queue == NULL || input == NULL) {
-        return -1;
-    }
-
-    fl_node_t *node = (fl_node_t *)calloc(1, sizeof *node);
-    if (node == NULL) {
-        return -1;
-    }
-
-    node->input = *input;
-    if (queue->tail == NULL) {
-        queue->head = node;
-        queue->tail = node;
-    } else {
-        queue->tail->next = node;
-        queue->tail = node;
-    }
-    queue->size++;
-    return 0;
+    (void)queue;
+    (void)input;
+    return -1; /* TODO */
 }
 
 int fl_queue_pop(fl_queue_t *queue, fl_input_t *out) {
-    if (queue == NULL || out == NULL || queue->head == NULL) {
-        return -1;
-    }
-
-    fl_node_t *node = queue->head;
-    *out = node->input;
-    queue->head = node->next;
-    if (queue->head == NULL) {
-        queue->tail = NULL;
-    }
-    free(node);
-    queue->size--;
-    return 0;
+    (void)queue;
+    (void)out;
+    return -1; /* TODO */
 }
 
 int fl_input_from_cstr(fl_input_t *out, const char *text) {

@@ -1,36 +1,77 @@
-# Lesson 03: Unix Processes, I/O, and Signals
+# Lesson 03: Unix Files, Processes, Redirection, and Signals
 
-## Unix Philosophy
+## What This Lesson Teaches
 
-Unix programs are designed to compose. Files, pipes, sockets, terminals, and
-devices are accessed through file descriptors. Processes communicate through
-these abstractions.
+Unix systems programming is built around two huge ideas:
 
-That is why file descriptor discipline matters.
+1. A process is a running program with its own execution context.
+2. Many resources are represented as file descriptors.
+
+By the end, you should be able to:
+
+- explain file descriptors and short reads/writes;
+- use `open`, `read`, `write`, `close`, and `dup2`;
+- explain `fork`, `exec`, `waitpid`, zombies, and exit status;
+- implement a child-process runner with timeout behavior;
+- explain why signal handling is tricky.
 
 ## File Descriptors
 
-Every process starts with:
+A file descriptor is a small integer in a process's descriptor table.
 
-- `0`: stdin;
-- `1`: stdout;
-- `2`: stderr.
+By convention:
 
-Common calls:
+```text
+0 = stdin
+1 = stdout
+2 = stderr
+```
+
+The descriptor does not contain the file. It is a handle that the kernel uses to
+find an open file description.
+
+Important calls:
 
 ```c
 int fd = open(path, O_RDONLY);
-ssize_t n = read(fd, buffer, sizeof buffer);
-ssize_t m = write(STDOUT_FILENO, buffer, (size_t)n);
+ssize_t n = read(fd, buf, sizeof buf);
+ssize_t m = write(STDOUT_FILENO, buf, (size_t)n);
 close(fd);
 ```
 
-`read` and `write` can return short counts. Always loop when exact byte counts
-matter.
+Always check return values. System calls fail.
 
-## Redirection
+## Short Counts
 
-Shell redirection is built from `open` and `dup2`:
+`read(fd, buf, n)` means "read up to `n` bytes." It does not promise `n`
+bytes.
+
+`write(fd, buf, n)` means "write up to `n` bytes." It does not promise all
+bytes were written.
+
+Short counts are common with:
+
+- pipes;
+- terminals;
+- sockets;
+- interrupted system calls;
+- nonblocking descriptors.
+
+Robust helper shape:
+
+```c
+int read_exact(int fd, unsigned char *buf, size_t len);
+int write_all(int fd, const unsigned char *buf, size_t len);
+```
+
+These helpers loop until they finish, hit EOF, or see an error.
+
+## `dup2` and Redirection
+
+`dup2(oldfd, newfd)` makes `newfd` refer to the same open file description as
+`oldfd`.
+
+Classic stdout redirection:
 
 ```c
 int fd = open("out.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -38,90 +79,163 @@ dup2(fd, STDOUT_FILENO);
 close(fd);
 ```
 
-After `dup2`, writes to stdout go to the file.
+After this, calls that write to descriptor `1` write to `out.txt`.
+
+This is how shells implement:
+
+```bash
+command > out.txt
+```
+
+Common trap: `dup2` changes descriptors. It does not copy file contents.
 
 ## Processes
 
-`fork` creates a child process. The child starts as a near-copy of the parent.
-Both continue from the same line, but `fork` returns different values:
+A program is code on disk. A process is a running instance.
 
-- child receives `0`;
-- parent receives child's PID;
-- error returns `-1`.
-
-`execvp` replaces the current process image with a new program.
-
-`waitpid` lets the parent reap the child and collect status.
-
-## Exit Status
-
-Use the macros:
+`fork` creates a child process:
 
 ```c
-if (WIFEXITED(status)) {
-    int code = WEXITSTATUS(status);
-}
-
-if (WIFSIGNALED(status)) {
-    int sig = WTERMSIG(status);
+pid_t pid = fork();
+if (pid == 0) {
+    /* child */
+} else if (pid > 0) {
+    /* parent */
+} else {
+    /* error */
 }
 ```
 
-A process that crashes from `SIGSEGV` is different from a process that exits
-with code `139`. Tests often distinguish these.
+The child starts as a copy of the parent, but the two processes then execute
+independently.
 
-## Signals
+## `exec`
 
-Signals are asynchronous notifications. They are useful but sharp.
+`execvp` replaces the current process image with another program:
 
-Use `sigaction`, not old `signal`, for serious programs.
+```c
+char *argv[] = {"ls", "-l", NULL};
+execvp(argv[0], argv);
+_exit(127);
+```
 
-Signal handlers should do as little as possible. Many library functions are not
-async-signal-safe. A common pattern is to set a `volatile sig_atomic_t` flag in
-the handler and let normal control flow do cleanup.
+If `execvp` succeeds, it does not return. If it returns, it failed. In a child
+process, use `_exit`, not `exit`, after failed `exec`, because `exit` can flush
+buffers copied from the parent.
+
+## `waitpid` and Zombies
+
+When a child terminates, the kernel keeps a small record containing its exit
+status. Until the parent collects that status, the child is a zombie.
+
+```c
+int status = 0;
+pid_t done = waitpid(pid, &status, 0);
+```
+
+Exit-status macros:
+
+```c
+WIFEXITED(status)
+WEXITSTATUS(status)
+WIFSIGNALED(status)
+WTERMSIG(status)
+```
+
+A process that exits with code `1` is different from a process killed by
+`SIGSEGV`.
+
+## Building a Program Runner
+
+The runner pattern appears in HW02, HW03, and FuzzLab.
+
+Parent:
+
+1. create temp input/output paths if needed;
+2. `fork`;
+3. wait for child;
+4. enforce timeout;
+5. classify result;
+6. clean up files and descriptors.
+
+Child:
+
+1. redirect stdout/stderr if required;
+2. replace `@@` placeholder if required;
+3. `execvp`;
+4. `_exit(127)` if `execvp` fails.
 
 ## Timeouts
 
-For a child-process runner:
+A simple timeout loop:
 
-1. fork the child;
-2. in the child, redirect output and exec;
-3. in the parent, wait with polling or signal-driven logic;
-4. if time expires, send `SIGKILL` or `SIGTERM`;
-5. reap the child.
+```text
+start clock
+while child not done:
+    waitpid(pid, &status, WNOHANG)
+    if done: classify
+    if elapsed > timeout: kill child and reap it
+    sleep a little
+```
 
-For homework, a simple loop using `waitpid(pid, &status, WNOHANG)` and `usleep`
-is acceptable. For the capstone, use a cleaner event-driven design.
+This is not the most advanced design, but it is good for learning. The crucial
+rule is: if you kill a child, you still must reap it.
 
-## Common Bugs
+## Signals
 
-- child accidentally runs parent code after failed `exec`;
-- parent forgets to close pipe ends;
-- zombies accumulate because parent does not reap;
-- blocking read waits forever;
-- output redirection leaks into parent;
-- timeout kills the wrong process.
+Signals are asynchronous notifications. Examples:
+
+- `SIGINT`: Ctrl-C;
+- `SIGCHLD`: child changed state;
+- `SIGSEGV`: invalid memory access;
+- `SIGALRM`: timer;
+- `SIGKILL`: cannot be caught or ignored.
+
+Signal handlers are dangerous because they interrupt normal flow. Many functions
+are not async-signal-safe, including `printf` and `malloc`.
+
+Safe beginner pattern:
+
+```c
+static volatile sig_atomic_t stop_requested = 0;
+
+static void handle_sigint(int sig) {
+    (void)sig;
+    stop_requested = 1;
+}
+```
+
+Then normal code checks `stop_requested`.
+
+## Common Traps
+
+- Parent forgets to reap the child.
+- Child continues running parent code after failed `exec`.
+- Parent accidentally redirects its own stdout instead of only the child's.
+- Code assumes one `read` receives a whole message.
+- Signal handler calls unsafe functions.
+- Timeout logic kills but does not reap.
+- Parent and child both keep pipe ends open, preventing EOF.
+
+## Professor-Style Question Patterns
+
+Likely questions:
+
+- What does `fork` return in parent vs child?
+- What happens if `execvp` succeeds?
+- What is a zombie?
+- What does `dup2(fd, 1)` do?
+- Why can `read` return fewer bytes than requested?
+- Which status macro tells you a child died from a signal?
 
 ## Practice
 
-Write a function:
+1. Write pseudocode for `run_with_timeout`.
+2. Explain why the child should call `_exit(127)` after failed `execvp`.
+3. Explain why closing an already-closed descriptor can be dangerous in threaded
+   programs.
 
-```c
-int run_with_timeout(char *const argv[], int timeout_ms);
-```
+## Assignment Connection
 
-It should return:
-
-- child exit code if exited normally;
-- `128 + signal` if killed by signal;
-- a special timeout code if killed by timeout.
-
-## Interview Angle
-
-You should be able to answer:
-
-- What does `fork` copy?
-- What does `exec` replace?
-- Why do zombies exist?
-- What is `dup2` used for?
-- Why are signal handlers restricted?
+HW02 is the pure process-control assignment. HW03 and FuzzLab reuse the same
+runner design repeatedly. If HW02 is shaky, the fuzzer projects will be flaky.

@@ -40,6 +40,15 @@
       }
     },
     {
+      "name": "bonus-cpp-warmup",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build/bonus-cpp-warmup",
+      "cacheVariables": {
+        "TRAINING_ASSIGNMENT": "bonus-cpp-warmup",
+        "TRAINING_ENABLE_STUDENT_TESTS": "ON"
+      }
+    },
+    {
       "name": "hw04",
       "inherits": "dev",
       "binaryDir": "${sourceDir}/build/hw04",
@@ -81,6 +90,7 @@
     { "name": "hw01", "configurePreset": "hw01" },
     { "name": "hw02", "configurePreset": "hw02" },
     { "name": "hw03", "configurePreset": "hw03" },
+    { "name": "bonus-cpp-warmup", "configurePreset": "bonus-cpp-warmup" },
     { "name": "hw04", "configurePreset": "hw04" },
     { "name": "hw05", "configurePreset": "hw05" },
     { "name": "capstone-c", "configurePreset": "capstone-c" },
@@ -90,6 +100,7 @@
     { "name": "hw01", "configurePreset": "hw01", "output": { "outputOnFailure": true } },
     { "name": "hw02", "configurePreset": "hw02", "output": { "outputOnFailure": true } },
     { "name": "hw03", "configurePreset": "hw03", "output": { "outputOnFailure": true } },
+    { "name": "bonus-cpp-warmup", "configurePreset": "bonus-cpp-warmup", "output": { "outputOnFailure": true } },
     { "name": "hw04", "configurePreset": "hw04", "output": { "outputOnFailure": true } },
     { "name": "hw05", "configurePreset": "hw05", "output": { "outputOnFailure": true } },
     { "name": "capstone-c", "configurePreset": "capstone-c", "output": { "outputOnFailure": true } },

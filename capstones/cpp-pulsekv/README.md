@@ -26,6 +26,15 @@ Required C++ features:
 - metrics endpoint/command;
 - graceful shutdown.
 
+Preparation reading:
+
+- C++ warmup lesson: `../../lessons/05b-cpp-warmup.md`
+- STL/RAII lesson: `../../lessons/06-cpp-raii-stl-templates.md`
+- LearnCpp smart pointers and move semantics: https://www.learncpp.com/cpp-tutorial/introduction-to-smart-pointers-move-semantics/
+- LearnCpp `std::unique_ptr`: https://www.learncpp.com/cpp-tutorial/stdunique_ptr/
+- LearnCpp standard algorithms: https://www.learncpp.com/cpp-tutorial/introduction-to-standard-library-algorithms/
+- LearnCpp containers and arrays: https://www.learncpp.com/cpp-tutorial/introduction-to-containers-and-arrays/
+
 Required Python features:
 
 - `python/client.py`: simple client library;
@@ -39,6 +48,16 @@ Optional advanced features:
 - binary protocol;
 - Prometheus-style metrics;
 - chaos testing with random disconnects.
+
+## Starter Boundary
+
+The starter code provides command/store type declarations, method signatures,
+a placeholder REPL, tests that describe expected behavior, and Python tooling
+skeletons. It intentionally does not implement the store, parser, TCP server,
+thread pool, or persistence layer.
+
+The project should be built in milestones. Do not try to write the full server
+first. Get the store and parser correct before any socket code exists.
 
 ## Protocol
 
@@ -160,6 +179,69 @@ python/
   load_test.py
   report.py
 ```
+
+## Public Component Contracts
+
+### `Store`
+
+`Store` owns the in-memory key-value map and its metrics.
+
+Required behavior:
+
+- `set(key, value)` stores or replaces a value;
+- `get(key)` returns `std::optional<std::string>`;
+- `erase(key)` returns whether a key was removed;
+- `stats()` returns a snapshot of counters.
+
+Thread-safety:
+
+- every public method must lock internally;
+- never expose references into the internal map;
+- do not hold the lock while doing socket I/O.
+
+### `parse_command`
+
+Turns a protocol line into a structured `Command`.
+
+Required valid forms:
+
+```text
+SET key value
+GET key
+DEL key
+STATS
+QUIT
+```
+
+Malformed lines must return `CommandType::Invalid` with a useful error string.
+
+### `execute_command`
+
+Applies one parsed command to a store and returns the exact protocol response.
+
+Examples:
+
+```text
+SET a 1  -> OK
+GET a    -> VALUE 1
+GET nope -> NOT_FOUND
+```
+
+### TCP Server
+
+The final server should:
+
+1. create a listening socket;
+2. accept clients;
+3. read newline-delimited commands;
+4. parse commands;
+5. execute against shared `Store`;
+6. write responses;
+7. close clients cleanly;
+8. shut down gracefully.
+
+The TCP layer should not know the internals of `Store`; it should call public
+methods only.
 
 ## Resume Bullets
 

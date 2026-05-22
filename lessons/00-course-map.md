@@ -51,6 +51,9 @@ timeouts.
 `hw03-fuzzer-lite` teaches mutation, queues, crash classification, and
 sanitizer-friendly workflows.
 
+`bonus-cpp-warmup` teaches C++ strings, vectors, optional results, enum classes,
+headers, and small class design before the RAII assignment.
+
 `hw04-cpp-raii` teaches modern C++ ownership and move-only resource wrappers.
 
 `hw05-concurrent-server` teaches protocol parsing, shared state, threads, and

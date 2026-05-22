@@ -1,103 +1,187 @@
-# Lesson 08: Capstone Playbook
+# Lesson 08: Capstone Playbook and Portfolio Standards
 
-## What Makes a Capstone Resume-Worthy
+## What This Lesson Teaches
 
-A resume-worthy systems project is not just a program that runs. It has:
+The capstones are not just bigger homeworks. They are portfolio projects. That
+means the implementation matters, but so do the README, tests, demo path,
+failure handling, and final report.
 
-- clear problem statement;
-- real systems concepts;
-- tests;
-- measurable behavior;
-- failure handling;
-- developer tooling;
-- documentation;
-- a clean demo path.
+By the end, you should know how to plan and execute the two capstones without
+turning them into unbounded projects.
 
-The capstones in this repo are intentionally larger than the weekly homeworks.
-They should feel like small production projects.
+## What Makes a Systems Capstone Resume-Worthy
 
-## Capstone Process
+A resume-worthy systems project has:
 
-Use milestones:
+- a specific problem statement;
+- real OS/compiler/networking/concurrency concepts;
+- a build that works from a fresh clone;
+- unit tests;
+- integration tests;
+- Python tooling around the C/C++ core;
+- measurable output;
+- a final architecture report;
+- a short demo path.
 
-1. Skeleton builds.
-2. Core library unit tests pass.
-3. CLI works for a simple case.
-4. Python integration tests pass.
-5. Stress or benchmark tool works.
-6. Error handling is tightened.
-7. README and final report are polished.
+It is not enough to say "implemented a fuzzer" or "implemented a server." You
+need to show what engineering constraints you handled.
 
-Do not start with every feature. Start with the smallest observable behavior and
-grow outward.
+## Milestone Discipline
+
+Each capstone must be implemented in stages:
+
+1. Core data structures compile.
+2. Unit tests pass.
+3. Minimal CLI works.
+4. Integration test works.
+5. Error handling is tightened.
+6. Stress/benchmark tool works.
+7. Report and README are polished.
+
+Do not start with the hardest feature. Start with the smallest behavior that can
+be observed and tested.
 
 ## C Capstone: FuzzLab
 
-The C capstone should show:
+FuzzLab demonstrates:
 
 - process control;
 - signals;
+- timeouts;
 - file descriptor redirection;
 - mutation;
-- crash detection;
-- timeout handling;
+- crash classification;
 - corpus management;
-- Python triage/reporting.
+- Python triage and reporting.
 
-The best implementation path:
+### Implementation Order
 
-1. Run one target with one input.
-2. Classify exit, crash, timeout.
-3. Load seed corpus.
-4. Add mutations.
-5. Save crashes.
-6. Add coverage or coverage-like priority.
-7. Add Python triage reports.
+1. Implement input representation and hashing.
+2. Implement mutation functions.
+3. Implement one target run with one input file.
+4. Add timeout handling.
+5. Add seed corpus loading.
+6. Add crash saving.
+7. Add Python triage.
+8. Add optional coverage-like prioritization.
+
+### What to Leave for the Learner
+
+Starter code should provide:
+
+- public headers;
+- structs and enums;
+- empty function bodies;
+- demo target;
+- Python script skeletons.
+
+Starter code should not provide:
+
+- working runner loop;
+- complete CLI parsing;
+- complete mutation suite;
+- crash artifact naming;
+- corpus priority logic.
+
+The README should explain the architecture enough that a learner can implement
+it without being handed the code.
 
 ## C++ Capstone: PulseKV
 
-The C++ capstone should show:
+PulseKV demonstrates:
 
-- RAII wrappers;
+- modern C++ ownership;
 - STL containers;
+- RAII wrappers;
+- parser design;
+- thread-safe state;
+- TCP server design;
 - thread pool;
-- TCP server;
-- parser;
-- persistent append-only log;
-- metrics;
 - Python load testing.
 
-The best implementation path:
+Preparation links:
 
-1. Build the in-memory store.
-2. Parse commands from strings.
-3. Add a single-client server.
-4. Add thread pool.
-5. Add persistence.
-6. Add metrics.
-7. Add Python load tests and dashboard/reporting.
+- C++ warmup lesson: `05b-cpp-warmup.md`
+- STL/RAII lesson: `06-cpp-raii-stl-templates.md`
+- LearnCpp smart pointers and move semantics: https://www.learncpp.com/cpp-tutorial/introduction-to-smart-pointers-move-semantics/
+- LearnCpp `std::unique_ptr`: https://www.learncpp.com/cpp-tutorial/stdunique_ptr/
+- LearnCpp standard algorithms: https://www.learncpp.com/cpp-tutorial/introduction-to-standard-library-algorithms/
+- LearnCpp containers and arrays: https://www.learncpp.com/cpp-tutorial/introduction-to-containers-and-arrays/
 
-## Final Report Template
+### Implementation Order
 
-Each capstone should include:
+1. Implement `Store` without networking.
+2. Implement command parsing.
+3. Implement command execution.
+4. Add append-only log.
+5. Add single-client TCP server.
+6. Add thread pool.
+7. Add metrics.
+8. Add Python load test and report.
 
-- architecture overview;
-- module list;
-- protocol or CLI spec;
-- failure modes;
-- testing strategy;
-- benchmark result;
-- limitations;
-- next steps;
-- resume bullets.
+### What to Leave for the Learner
 
-## Demo Checklist
+Starter code should provide:
 
-Before showing the project:
+- class declarations;
+- method signatures;
+- command/response enums;
+- tests that describe behavior;
+- Python client/load-test skeletons.
+
+Starter code should not provide:
+
+- full store implementation;
+- full parser implementation;
+- full TCP server implementation;
+- thread pool implementation.
+
+## Report Template
+
+Each capstone should finish with a `REPORT.md`:
+
+```text
+# Project Report
+
+## Summary
+
+## Architecture
+
+## Build and Run
+
+## Testing Strategy
+
+## Interesting Bugs
+
+## Performance or Stress Result
+
+## Limitations
+
+## Future Work
+
+## Resume Bullets
+```
+
+## Interview Prep
+
+For each capstone, be ready to explain:
+
+- why you chose the architecture;
+- what could go wrong;
+- how you tested it;
+- how you handled memory/resource lifetime;
+- one bug you found and fixed;
+- what you would improve with more time.
+
+## Final Quality Bar
+
+Before calling a capstone done:
 
 - fresh clone builds;
 - tests pass;
-- demo command is in README;
-- sample output is included;
-- no secret paths or local-only assumptions;
-- screenshots or reports are committed if useful.
+- Python demo works;
+- README has exact commands;
+- report explains architecture;
+- no local-only paths;
+- no generated files committed;
+- no secrets or machine-specific assumptions.

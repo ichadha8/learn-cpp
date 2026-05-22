@@ -1,48 +1,129 @@
-# Lesson 01: C Linux Tooling
+# Lesson 01: Linux C Tooling, Translation, and Debugging
 
-## Mental Model
+## What This Lesson Teaches
 
-C gives you direct access to memory and operating-system interfaces. That power
-is why C is still used in kernels, embedded systems, networking, storage,
-databases, and performance-critical infrastructure. It also means the tools are
-part of the language experience.
+This lesson teaches the workflow you should use for every C assignment in this
+repo. C is small as a language, but the development environment around it is not
+small. You need to understand what the compiler does, what the linker does, what
+the loader does, and how to debug a program after it compiles but behaves
+incorrectly.
 
-You are not "done" when the program compiles. In systems C, the baseline is:
+By the end, you should be able to:
 
-- build reproducibly;
-- run tests;
-- inspect failures;
-- check memory;
-- explain behavior.
+- explain the difference between preprocessing, compiling, assembling, linking,
+  and loading;
+- recognize common compile-time vs link-time errors;
+- build and test with CMake;
+- use GDB to inspect a failing C program;
+- use Valgrind or sanitizers to find memory bugs;
+- keep stdout clean for testable Unix programs.
 
-## Toolchain Pieces
+## Big Picture: Source Code Is Not the Program Yet
 
-The path from source to executable usually looks like this:
+When you write `main.c`, you have not written an executable. You have written
+one input to a toolchain. The rough path is:
 
-1. Preprocessor expands includes and macros.
-2. Compiler turns C into assembly or object code.
-3. Assembler emits `.o` files.
-4. Linker combines object files and libraries.
-5. Loader maps the executable into memory at runtime.
+```text
+source files
+  -> preprocessor
+  -> compiler
+  -> assembler
+  -> linker
+  -> executable file
+  -> loader at runtime
+  -> running process
+```
+
+Each stage can fail for different reasons.
+
+### Preprocessor
+
+The preprocessor handles lines that begin with `#`, such as:
+
+```c
+#include <stdio.h>
+#define BUFFER_SIZE 1024
+```
+
+It performs textual inclusion and macro expansion before the compiler sees the
+program. That means a missing header is usually found before ordinary type
+checking.
+
+Useful command:
+
+```bash
+gcc -E src/main.c
+```
+
+This prints the preprocessed translation unit. It is noisy, but it helps you
+understand that `#include` literally brings declarations into the file being
+compiled.
+
+### Compiler
+
+The compiler checks C syntax and types, then turns the translation unit into
+assembly or object code.
+
+Examples of compiler errors:
+
+- missing semicolon;
+- assigning a pointer to an integer without a cast;
+- calling a function before it is declared;
+- using a struct field that does not exist.
 
 Useful commands:
 
 ```bash
-gcc -E file.c
-gcc -S file.c
-gcc -c file.c
-gcc file.o -o program
-ldd ./program
-nm ./program
-objdump -d ./program
+gcc -S src/main.c
+gcc -c src/main.c -o main.o
 ```
 
-You do not need to memorize every option. You do need to know what stage a
-failure belongs to.
+### Assembler
 
-## CMake Workflow
+The assembler turns assembly into machine-code object files. In normal work you
+rarely call it directly, but it is part of the pipeline.
 
-This repo uses CMake presets:
+### Linker
+
+The linker combines object files and libraries into an executable. The compiler
+can say "this function call is syntactically valid" while the linker later says
+"I cannot find the implementation."
+
+Example:
+
+```c
+/* main.c */
+int helper(void);
+
+int main(void) {
+    return helper();
+}
+```
+
+If no object file defines `helper`, compilation can succeed but linking fails
+with an undefined reference.
+
+Useful commands:
+
+```bash
+nm build/path/program
+ldd build/path/program
+objdump -d build/path/program
+```
+
+`nm` shows symbols. `ldd` shows shared-library dependencies. `objdump` can show
+disassembly.
+
+### Loader
+
+The loader maps the executable and shared libraries into memory, sets up the
+initial process state, and starts execution. Runtime errors such as missing
+shared libraries happen at this layer.
+
+## CMake in This Repo
+
+This repo uses CMake presets so every assignment has a predictable command
+shape:
 
 ```bash
 cmake --preset hw01
@@ -50,46 +131,82 @@ cmake --build --preset hw01
 ctest --preset hw01 --output-on-failure
 ```
 
-CMake configures the build. Ninja or Make builds it. CTest runs the tests.
+What the commands mean:
 
-If the compiler says a header is missing, that is usually a target include path
-problem. If the compiler succeeds but linking fails, that is usually a missing
-source file or library.
+- `cmake --preset hw01`: configure the build directory for HW01.
+- `cmake --build --preset hw01`: compile and link.
+- `ctest --preset hw01`: run registered tests.
+
+Common CMake failure categories:
+
+- Header not found: include directory missing from a target.
+- Undefined reference: source file or library missing from a target.
+- Wrong language standard: target not configured for the feature used.
+- Test not found: executable was not added with `add_test`.
+
+## Warnings Are Part of Correctness
+
+This course enables warnings such as:
+
+```text
+-Wall -Wextra -Wshadow -Wpedantic -Wconversion -Wformat=2 -Wundef
+```
+
+Do not treat warnings as decorative. A warning often means the compiler found a
+real bug pattern.
+
+Important examples:
+
+- `-Wshadow`: a local variable hides another variable with the same name.
+- `-Wconversion`: a value may change when converted to another type.
+- `-Wformat=2`: `printf` format string does not match argument types.
+- `-Wundef`: a preprocessor condition references an undefined macro.
 
 ## Debugging With GDB
 
-Build with debug symbols:
+Use GDB when the program compiles but you do not understand what it is doing.
+
+Core workflow:
 
 ```bash
-cmake --preset hw01
-cmake --build --preset hw01
 gdb ./build/hw01/assignments/hw01-c-puzzle/hw01_tests
 ```
 
-Core commands:
+Inside GDB:
 
 ```gdb
-break function_name
+break puzzle_place
 run
 next
 step
-print variable
+print row
+print *puzzle
 backtrace
 frame 1
 continue
 quit
 ```
 
-Use GDB when:
+The most important command for crashes is:
 
-- a test fails and you do not know which branch ran;
-- a program crashes;
-- a pointer is wrong;
-- a child process exits unexpectedly.
+```gdb
+backtrace
+```
 
-## Memory Tools
+It shows the call stack: which functions called which functions to reach the
+crash.
 
-AddressSanitizer catches many memory errors quickly:
+## Memory Debugging
+
+C lets you create bugs that normal tests may not catch:
+
+- writing one byte past an array;
+- using memory after `free`;
+- freeing twice;
+- forgetting to free;
+- reading uninitialized memory.
+
+Use AddressSanitizer:
 
 ```bash
 cmake --preset hw01 -DCMAKE_C_FLAGS="-fsanitize=address,undefined -g"
@@ -97,41 +214,58 @@ cmake --build --preset hw01
 ctest --preset hw01 --output-on-failure
 ```
 
-Valgrind is slower but useful:
+Use Valgrind:
 
 ```bash
 valgrind --leak-check=full ./program
 ```
 
-Typical memory bugs:
+AddressSanitizer is usually faster and easier for out-of-bounds and use-after-
+free bugs. Valgrind is slower but very useful for leak reports.
 
-- reading uninitialized memory;
-- writing past an array;
-- freeing twice;
-- forgetting to free;
-- returning a pointer to a local variable;
-- using memory after free.
+## Unix Output Discipline
 
-## Output Discipline
+Many systems programs are tested by exact output. That means stdout is not a
+place for random debugging chatter.
 
-Many systems assignments grade exact output. Debug output belongs on `stderr`,
-behind a debug macro, or in logs that tests do not parse.
+Use:
 
-In a Unix pipeline, stdout is data. Treat it with respect.
+- stdout for specified program output;
+- stderr for diagnostic messages;
+- debug macros that can be disabled;
+- logs only when the assignment specifies them.
+
+Why this matters:
+
+```bash
+./program | other_program
+```
+
+In Unix, stdout is often another program's input. Extra text can break a
+pipeline or an autograder.
+
+## Professor-Style Question Patterns
+
+You should be ready for questions like:
+
+- A file compiles but linking fails with an undefined reference. Which stage is
+  failing?
+- What tool would you use to inspect a segmentation fault?
+- What tool would you use to detect a memory leak?
+- What is the difference between stdout and stderr?
+- Why can a header compile problem be different from a linker problem?
 
 ## Practice
 
-1. Build `hw01`.
-2. Run its tests.
-3. Pick one failing test and inspect it with GDB.
-4. Add a temporary debug print to `stderr`.
-5. Remove the debug print before committing.
+1. Configure and build one homework preset.
+2. Run the tests and intentionally inspect one failing test with GDB.
+3. Add a temporary `fprintf(stderr, ...)` debug line.
+4. Remove the debug line.
+5. Run a memory checker on the test binary.
 
-## Interview Angle
+## Assignment Connection
 
-You should be able to answer:
-
-- What is the difference between compile errors and link errors?
-- How do you debug a segmentation fault?
-- How do you check for memory leaks?
-- Why does exact stdout matter for command-line tools?
+Every homework assumes this workflow. Before you start implementing logic, make
+sure you can build, run tests, read compiler messages, and launch GDB. If you
+cannot do those things, the later systems topics will feel much harder than
+they really are.

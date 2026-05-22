@@ -103,16 +103,19 @@ Assignment:
 Read:
 
 - `lessons/05-modern-cpp-core.md`
+- `lessons/05b-cpp-warmup.md`
 - `lessons/06-cpp-raii-stl-templates.md`
 
 Do:
 
+- complete the bonus warmup if C++ syntax feels rusty;
 - write move-only resource wrappers;
 - use STL containers and algorithms;
 - test exception and ownership behavior.
 
 Assignment:
 
+- optional bridge: `assignments/bonus-cpp-warmup`
 - `assignments/hw04-cpp-raii`
 
 ### Week 6: Concurrency and Networking
