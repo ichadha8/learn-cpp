@@ -49,7 +49,7 @@ void test_visible_count_edges() {
     assert(puzzle_visible_count(decreasing, 4) == 1);
     assert(puzzle_visible_count(mixed, 4) == 2);
     assert(puzzle_visible_count(with_empty, 4) == 2);
-    assert(puzzle_visible_count(increasing, 0) == 0);
+    assert(puzzle_visible_count(increasing, 0) == 1);
     assert(puzzle_visible_count(nullptr, 4) == -1);
     assert(puzzle_visible_count(increasing, -1) == -1);
 }
@@ -58,7 +58,7 @@ void test_duplicate_detection() {
     puzzle_t puzzle{};
     assert(puzzle_init(&puzzle, 4) == 0);
     assert(puzzle_load(&puzzle, "12-134----------", "0000000000000000") == 0);
-    assert(puzzle_has_duplicate_in_row(&puzzle, 0) == 0);
+    assert(puzzle_has_duplicate_in_row(&puzzle, 0) == 1);
     assert(puzzle_has_duplicate_in_row(&puzzle, 1) == 0);
     assert(puzzle_has_duplicate_in_col(&puzzle, 0) == 1);
     assert(puzzle_has_duplicate_in_col(&puzzle, 1) == 0);

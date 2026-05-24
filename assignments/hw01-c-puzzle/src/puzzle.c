@@ -70,13 +70,40 @@ int puzzle_load(puzzle_t *puzzle, const char *state, const char *clues) {
 int puzzle_visible_count(const int *values, int count) {
     (void)values;
     (void)count;
+    if (values == NULL || count < 0) {
+        return -1;
+    }
+    int vcount = 0;
+    if (values[0] != 0) vcount++; 
+    int prev = values[0];
+    for( int i=1; i<count; i++){
+        if (values[i] > prev){
+            prev = values[i];
+            vcount ++;
+        }
+    }
+    if (vcount>=0) return vcount;
     return -1; /* TODO */
 }
 
 int puzzle_has_duplicate_in_row(const puzzle_t *puzzle, int row) {
     (void)puzzle;
     (void)row;
-    return -1; /* TODO */
+    int nums[]={0, 1, 2, 3, 4, 5, 6, 7, 8};
+    (void)nums;
+    int counts[9] = {0};
+    for (int i=0; i<puzzle->size; i++){
+       int curr = puzzle -> cells[row][i];
+        if ( curr < 0 || curr > puzzle -> size) {
+            return -1;
+        }
+        
+        counts[curr]++;
+        if (curr !=0 &&counts[curr] > 1) {
+            return 1;
+        }
+    }
+    return 0; /* TODO */
 }
 
 int puzzle_has_duplicate_in_col(const puzzle_t *puzzle, int col) {
