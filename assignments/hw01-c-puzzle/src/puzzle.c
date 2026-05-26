@@ -89,6 +89,9 @@ int puzzle_visible_count(const int *values, int count) {
 int puzzle_has_duplicate_in_row(const puzzle_t *puzzle, int row) {
     (void)puzzle;
     (void)row;
+    if (puzzle == NULL || row < 0 || row >= puzzle->size) {
+        return -1;
+    }
     int nums[]={0, 1, 2, 3, 4, 5, 6, 7, 8};
     (void)nums;
     int counts[9] = {0};
@@ -109,19 +112,84 @@ int puzzle_has_duplicate_in_row(const puzzle_t *puzzle, int row) {
 int puzzle_has_duplicate_in_col(const puzzle_t *puzzle, int col) {
     (void)puzzle;
     (void)col;
-    return -1; /* TODO */
+    if (puzzle == NULL || col < 0 || col >= puzzle->size) {
+        return -1;
+    }
+     int nums[]={0, 1, 2, 3, 4, 5, 6, 7, 8};
+    (void)nums;
+    int counts[9] = {0};
+    for (int i=0; i<puzzle->size; i++){
+       int curr = puzzle -> cells[i][col];
+        if ( curr < 0 || curr > puzzle -> size) {
+            return -1;
+        }
+        
+        counts[curr]++;
+        if (curr !=0 && counts[curr] > 1) {
+            return 1;
+        }
+    }
+    return 0; /* TODO */
 }
 
 int puzzle_row_satisfies_clues(const puzzle_t *puzzle, int row) {
     (void)puzzle;
     (void)row;
-    return -1; /* TODO */
+    int flipped[puzzle->size];
+
+    if (puzzle == NULL || row < 0 || row >= puzzle->size) {
+        return -1;
+    }
+
+    for (int i=0; i<puzzle -> size; i++){
+        if (puzzle -> cells[row][i] <= 0 || puzzle -> cells[row][i] > puzzle -> size) {
+            return -1;
+        }
+        flipped[i] = puzzle ->cells[row][puzzle->size-i-1];
+    }
+
+    int lcount = puzzle_visible_count(puzzle->cells[row], puzzle->size);
+    if (lcount != puzzle->left[row]){
+        return 0;
+    }
+
+    
+    int rcount = puzzle_visible_count(flipped, puzzle->size);
+    if (rcount != puzzle->right[row]){
+        return 0;
+    }
+
+    return 1; /* TODO */
 }
 
 int puzzle_col_satisfies_clues(const puzzle_t *puzzle, int col) {
     (void)puzzle;
     (void)col;
-    return -1; /* TODO */
+    int flipped[puzzle->size];
+
+    if (puzzle == NULL || col < 0 || col >= puzzle->size) {
+        return -1;
+    }
+
+    for (int i=0; i<puzzle -> size; i++){
+        if (puzzle -> cells[i][col] <= 0 || puzzle -> cells[i][col] > puzzle -> size) {
+            return -1;
+        }
+        flipped[i] = puzzle ->cells[i][col];
+    }
+
+    int tcount = puzzle_visible_count(puzzle->cells[col], puzzle->size);
+    if (tcount != puzzle->top[col]){
+        return 0;
+    }
+
+    
+    int bcount = puzzle_visible_count(flipped, puzzle->size);
+    if (bcount != puzzle->bottom[col]){
+        return 0;
+    }
+
+    return 1; /* TODO */
 }
 
 int puzzle_place(puzzle_t *puzzle, int row, int col, int value) {
